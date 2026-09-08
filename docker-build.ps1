@@ -3,6 +3,10 @@
 # This script automates the process of building and running the Docker container
 # with version information dynamically injected at build time.
 
+param (
+    [string]$ImageName = "cli-proxy-api:gemini38"
+)
+
 # Stop script execution on any error
 $ErrorActionPreference = "Stop"
 
@@ -35,7 +39,7 @@ switch ($choice) {
         Write-Host "----------------------------------------"
 
         # Build and start the services with a local-only image tag
-        $env:CLI_PROXY_IMAGE = "cli-proxy-api:local"
+        $env:CLI_PROXY_IMAGE = $ImageName
         
         Write-Host "Building the Docker image..."
         docker compose build --build-arg VERSION=$VERSION --build-arg COMMIT=$COMMIT --build-arg BUILD_DATE=$BUILD_DATE
