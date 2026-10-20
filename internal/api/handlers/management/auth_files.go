@@ -1683,6 +1683,70 @@ func (h *Handler) PatchAuthFileFields(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// RefreshAuthFile manually triggers a credential refresh for an auth file.
+func (h *Handler) RefreshAuthFile(c *gin.Context) {
+	if h.authManager == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "core auth manager unavailable"})
+		return
+	}
+
+	var req struct {
+		Name      string `json:"name"`
+		AuthIndex string `json:"auth_index"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+
+	name := strings.TrimSpace(req.Name)
+	authIndex := strings.TrimSpace(req.AuthIndex)
+	if name == "" && authIndex == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name or auth_index is required"})
+		return
+	}
+
+	var targetAuth *coreauth.Auth
+	if authIndex != "" {
+		targetAuth = h.authByIndex(authIndex)
+	}
+	if targetAuth == nil && name != "" {
+		if auth, ok := h.authManager.GetByID(name); ok {
+			targetAuth = auth
+		} else {
+			for _, auth := range h.authManager.List() {
+				if auth != nil && strings.TrimSpace(auth.FileName) == name {
+					targetAuth = auth
+					break
+				}
+			}
+		}
+	}
+
+	if targetAuth == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "auth file not found"})
+		return
+	}
+
+	if coreauth.IsPluginVirtualAuth(targetAuth) {
+		c.JSON(http.StatusConflict, gin.H{"error": errPluginVirtualAuth.Error()})
+		return
+	}
+
+	ctx := c.Request.Context()
+	refreshed, err := h.authManager.RefreshAuth(ctx, targetAuth.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("failed to refresh auth: %v", err)})
+		return
+	}
+
+	if errHook := h.notifyAuthFilePersisted(ctx, refreshed); errHook != nil {
+		log.Warnf("failed to trigger persist hook after manual refresh: %v", errHook)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
 func (h *Handler) notifyAuthFilePersisted(ctx context.Context, auth *coreauth.Auth) error {
 	if h == nil || h.postAuthPersistHook == nil || auth == nil {
 		return nil

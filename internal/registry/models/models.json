@@ -2411,6 +2411,7 @@
       "object": "model",
       "owned_by": "antigravity",
       "type": "antigravity",
+      "supports_web_search": true,
       "display_name": "Gemini 3.7 Flash",
       "name": "gemini-3.7-flash-high",
       "description": "Gemini 3.7 Flash (High)",
@@ -2434,13 +2435,17 @@
       ],
       "supportedOutputModalities": [
         "text"
-      ]
+      ],
+      "native_capabilities": {
+        "web_search": true
+      }
     },
     {
       "id": "gemini-3.8-flash-high",
       "object": "model",
       "owned_by": "antigravity",
       "type": "antigravity",
+      "supports_web_search": true,
       "display_name": "Gemini 3.8 Flash",
       "name": "gemini-3.8-flash-high",
       "description": "Gemini 3.8 Flash (High)",
@@ -2464,7 +2469,10 @@
       ],
       "supportedOutputModalities": [
         "text"
-      ]
+      ],
+      "native_capabilities": {
+        "web_search": true
+      }
     }
   ],
   "xai": [

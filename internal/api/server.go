@@ -1063,6 +1063,7 @@ func (s *Server) registerManagementRoutes() {
 		mgmt.DELETE("/auth-files", s.mgmt.DeleteAuthFile)
 		mgmt.PATCH("/auth-files/status", s.mgmt.PatchAuthFileStatus)
 		mgmt.PATCH("/auth-files/fields", s.mgmt.PatchAuthFileFields)
+		mgmt.POST("/auth-files/refresh", s.mgmt.RefreshAuthFile)
 		mgmt.POST("/vertex/import", s.mgmt.ImportVertexCredential)
 
 		mgmt.GET("/anthropic-auth-url", s.mgmt.RequestAnthropicToken)
@@ -1081,6 +1082,62 @@ func (s *Server) registerManagementRoutes() {
 		mgmt.GET("/qoder-auth-url", s.mgmt.RequestQoderToken)
 		mgmt.GET("/get-auth-status", s.mgmt.GetAuthStatus)
 		mgmt.DELETE("/oauth-session", s.mgmt.CancelAuthSession)
+	}
+
+	// Register /v8/management routes for compatibility with newer frontend releases
+	s.registerManagementV8CompatRoutes()
+}
+
+func (s *Server) registerManagementV8CompatRoutes() {
+	const prefix = "/v8/management"
+	s.engine.POST(prefix+"/oauth-callback", s.managementAvailabilityMiddleware(), s.mgmt.PostOAuthCallback)
+	s.engine.GET(prefix+"/oauth-callback", s.managementAvailabilityMiddleware(), s.mgmt.GetOAuthCallback)
+
+	v8 := s.engine.Group(prefix)
+	v8.Use(s.managementAvailabilityMiddleware(), s.mgmt.Middleware())
+	{
+		// Config routes
+		v8.GET("/config", s.mgmt.GetConfig)
+		v8.GET("/config.yaml", s.mgmt.GetConfigYAML)
+		v8.PUT("/config.yaml", s.mgmt.PutConfigYAML)
+
+		// Operational and Observability routes
+		v8.GET("/server/latest-version", s.mgmt.GetLatestVersion)
+		v8.GET("/latest-version", s.mgmt.GetLatestVersion)
+		v8.POST("/requests/api-call", s.mgmt.APICall)
+		v8.POST("/api-call", s.mgmt.APICall)
+		v8.POST("/routing/cooldown/reset", s.mgmt.ResetQuota)
+		v8.GET("/routing/model-definitions/:channel", s.mgmt.GetStaticModelDefinitions)
+
+		v8.GET("/observability/logs", s.mgmt.GetLogs)
+		v8.DELETE("/observability/logs", s.mgmt.DeleteLogs)
+		v8.GET("/observability/logs/errors", s.mgmt.GetRequestErrorLogs)
+		v8.GET("/observability/logs/errors/:name", s.mgmt.DownloadRequestErrorLog)
+		v8.GET("/observability/logs/requests/:id", s.mgmt.GetRequestLogByID)
+		v8.GET("/observability/usage/api-keys", s.mgmt.GetAPIKeyUsage)
+
+		// Credentials / Auth files routes
+		v8.GET("/credentials", s.mgmt.ListAuthFiles)
+		v8.POST("/credentials", s.mgmt.UploadAuthFile)
+		v8.DELETE("/credentials", s.mgmt.DeleteAuthFile)
+		v8.GET("/credentials/models", s.mgmt.GetAuthFileModels)
+		v8.GET("/credentials/download", s.mgmt.DownloadAuthFile)
+		v8.PATCH("/credentials/status", s.mgmt.PatchAuthFileStatus)
+		v8.PATCH("/credentials/fields", s.mgmt.PatchAuthFileFields)
+		v8.POST("/credentials/refresh", s.mgmt.RefreshAuthFile)
+
+		// OAuth routes
+		v8.GET("/oauth/status", s.mgmt.GetAuthStatus)
+		v8.DELETE("/oauth/session", s.mgmt.CancelAuthSession)
+
+		// Fallback compatibility with v0 paths under /v8/management
+		v8.GET("/auth-files", s.mgmt.ListAuthFiles)
+		v8.GET("/auth-files/models", s.mgmt.GetAuthFileModels)
+		v8.POST("/auth-files/refresh", s.mgmt.RefreshAuthFile)
+		v8.GET("/usage", s.mgmt.GetUsageStatistics)
+		v8.GET("/api-keys", s.mgmt.GetAPIKeys)
+		v8.GET("/api-key-usage", s.mgmt.GetAPIKeyUsage)
+		v8.GET("/model-definitions/:channel", s.mgmt.GetStaticModelDefinitions)
 	}
 }
 

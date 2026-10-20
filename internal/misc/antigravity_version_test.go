@@ -42,24 +42,24 @@ func TestAntigravityLatestVersionUsesCurrentHubFallback(t *testing.T) {
 	defer restore()
 
 	version := AntigravityLatestVersion()
-	if version != "2.9.2" {
-		t.Fatalf("AntigravityLatestVersion() = %q, want %q", version, "2.9.2")
+	if version != "2.23.0" {
+		t.Fatalf("AntigravityLatestVersion() = %q, want %q", version, "2.23.0")
 	}
 }
 
 func TestAntigravityUserAgentUsesHubFamily(t *testing.T) {
-	restore := overrideAntigravityVersionCacheForTest(t, "2.9.2", time.Now().Add(time.Hour))
+	restore := overrideAntigravityVersionCacheForTest(t, "2.23.0", time.Now().Add(time.Hour))
 	defer restore()
 
-	want := "antigravity/hub/2.9.2 darwin/arm64"
+	want := "antigravity/hub/2.23.0 darwin/arm64"
 	if got := AntigravityUserAgent(); got != want {
 		t.Fatalf("AntigravityUserAgent() = %q, want %q", got, want)
 	}
 }
 
 func TestAntigravityVersionFromUserAgentParsesHubFamily(t *testing.T) {
-	if got := AntigravityVersionFromUserAgent("antigravity/hub/2.9.2 darwin/arm64"); got != "2.9.2" {
-		t.Fatalf("AntigravityVersionFromUserAgent() = %q, want %q", got, "2.9.2")
+	if got := AntigravityVersionFromUserAgent("antigravity/hub/2.23.0 darwin/arm64"); got != "2.23.0" {
+		t.Fatalf("AntigravityVersionFromUserAgent() = %q, want %q", got, "2.23.0")
 	}
 }
 
@@ -70,10 +70,10 @@ func TestAntigravityVersionFromUserAgentParsesLegacyFamily(t *testing.T) {
 }
 
 func TestAntigravityLoadCodeAssistUserAgentUsesShortUA(t *testing.T) {
-	restore := overrideAntigravityVersionCacheForTest(t, "2.9.2", time.Now().Add(time.Hour))
+	restore := overrideAntigravityVersionCacheForTest(t, "2.23.0", time.Now().Add(time.Hour))
 	defer restore()
 
-	want := "antigravity/hub/2.9.2 darwin/arm64"
+	want := "antigravity/hub/2.23.0 darwin/arm64"
 	if got := AntigravityLoadCodeAssistUserAgent(""); got != want {
 		t.Fatalf("AntigravityLoadCodeAssistUserAgent() = %q, want %q", got, want)
 	}

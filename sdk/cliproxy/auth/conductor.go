@@ -5945,6 +5945,11 @@ func (m *Manager) tryRefreshAfterUnauthorized(ctx context.Context, auth *Auth, e
 	return refreshed, true
 }
 
+// RefreshAuth performs a synchronous credential refresh for the given auth ID.
+func (m *Manager) RefreshAuth(ctx context.Context, id string) (*Auth, error) {
+	return m.refreshAuthForRequest(ctx, id, "")
+}
+
 func (m *Manager) refreshAuth(ctx context.Context, id string) {
 	_, _ = m.refreshAuthForRequest(ctx, id, "")
 }
