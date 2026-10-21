@@ -1138,6 +1138,17 @@ func (s *Server) registerManagementV8CompatRoutes() {
 		v8.GET("/api-keys", s.mgmt.GetAPIKeys)
 		v8.GET("/api-key-usage", s.mgmt.GetAPIKeyUsage)
 		v8.GET("/model-definitions/:channel", s.mgmt.GetStaticModelDefinitions)
+
+		// OAuth excluded-models & model-alias routes for newer frontend (/v8/management/config/oauth/*)
+		v8.GET("/config/oauth/excluded-models", s.mgmt.GetOAuthExcludedModels)
+		v8.PUT("/config/oauth/excluded-models", s.mgmt.PutOAuthExcludedModels)
+		v8.PATCH("/config/oauth/excluded-models", s.mgmt.PatchOAuthExcludedModels)
+		v8.DELETE("/config/oauth/excluded-models", s.mgmt.DeleteOAuthExcludedModels)
+
+		v8.GET("/config/oauth/model-alias", s.mgmt.GetOAuthModelAlias)
+		v8.PUT("/config/oauth/model-alias", s.mgmt.PutOAuthModelAlias)
+		v8.PATCH("/config/oauth/model-alias", s.mgmt.PatchOAuthModelAlias)
+		v8.DELETE("/config/oauth/model-alias", s.mgmt.DeleteOAuthModelAlias)
 	}
 }
 
