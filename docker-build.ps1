@@ -4,20 +4,23 @@
 # with version information dynamically injected at build time.
 
 param (
-    [string]$ImageName = "cli-proxy-api:gemini38"
+    [string]$ImageName = "cli-proxy-api:gemini38",
+    [string]$Choice = ""
 )
 
 # Stop script execution on any error
 $ErrorActionPreference = "Stop"
 
 # --- Step 1: Choose Environment ---
-Write-Host "Please select an option:"
-Write-Host "1) Run using Pre-built Image (Recommended)"
-Write-Host "2) Build from Source and Run (For Developers)"
-$choice = Read-Host -Prompt "Enter choice [1-2]"
+if (-not $Choice) {
+    Write-Host "Please select an option:"
+    Write-Host "1) Run using Pre-built Image (Recommended)"
+    Write-Host "2) Build from Source and Run (For Developers)"
+    $Choice = Read-Host -Prompt "Enter choice [1-2]"
+}
 
 # --- Step 2: Execute based on choice ---
-switch ($choice) {
+switch ($Choice) {
     "1" {
         Write-Host "--- Running with Pre-built Image ---"
         docker compose up -d --remove-orphans --no-build

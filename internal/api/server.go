@@ -1090,6 +1090,8 @@ func (s *Server) registerManagementRoutes() {
 
 func (s *Server) registerManagementV8CompatRoutes() {
 	const prefix = "/v8/management"
+	s.engine.POST(prefix+"/oauth/callback", s.managementAvailabilityMiddleware(), s.mgmt.PostOAuthCallback)
+	s.engine.GET(prefix+"/oauth/callback", s.managementAvailabilityMiddleware(), s.mgmt.GetOAuthCallback)
 	s.engine.POST(prefix+"/oauth-callback", s.managementAvailabilityMiddleware(), s.mgmt.PostOAuthCallback)
 	s.engine.GET(prefix+"/oauth-callback", s.managementAvailabilityMiddleware(), s.mgmt.GetOAuthCallback)
 
@@ -1127,6 +1129,8 @@ func (s *Server) registerManagementV8CompatRoutes() {
 		v8.POST("/credentials/refresh", s.mgmt.RefreshAuthFile)
 
 		// OAuth routes
+		v8.POST("/oauth/import", s.mgmt.ImportOAuthV8)
+		v8.GET("/oauth/auth-url", s.mgmt.StartOAuthV8)
 		v8.GET("/oauth/status", s.mgmt.GetAuthStatus)
 		v8.DELETE("/oauth/session", s.mgmt.CancelAuthSession)
 
