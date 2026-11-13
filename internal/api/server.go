@@ -1096,12 +1096,19 @@ func (s *Server) registerManagementV8CompatRoutes() {
 	s.engine.GET(prefix+"/oauth-callback", s.managementAvailabilityMiddleware(), s.mgmt.GetOAuthCallback)
 
 	v8 := s.engine.Group(prefix)
-	v8.Use(s.managementAvailabilityMiddleware(), s.mgmt.Middleware())
+	v8.Use(s.managementAvailabilityMiddleware(), s.mgmt.Middleware(), func(c *gin.Context) {
+		c.Set(managementHandlers.ConfigV8ContextKey, true)
+	})
 	{
 		// Config routes
-		v8.GET("/config", s.mgmt.GetConfig)
-		v8.GET("/config.yaml", s.mgmt.GetConfigYAML)
-		v8.PUT("/config.yaml", s.mgmt.PutConfigYAML)
+		v8.GET("/config", s.mgmt.ConfigV8)
+		v8.PUT("/config", s.mgmt.ConfigV8)
+		v8.PATCH("/config", s.mgmt.ConfigV8)
+		v8.GET("/config.yaml", s.mgmt.ConfigV8)
+		v8.PUT("/config.yaml", s.mgmt.ConfigV8)
+		for _, method := range []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodDelete} {
+			v8.Handle(method, "/config/*path", s.mgmt.ConfigV8)
+		}
 
 		// Operational and Observability routes
 		v8.GET("/server/latest-version", s.mgmt.GetLatestVersion)
@@ -1142,17 +1149,6 @@ func (s *Server) registerManagementV8CompatRoutes() {
 		v8.GET("/api-keys", s.mgmt.GetAPIKeys)
 		v8.GET("/api-key-usage", s.mgmt.GetAPIKeyUsage)
 		v8.GET("/model-definitions/:channel", s.mgmt.GetStaticModelDefinitions)
-
-		// OAuth excluded-models & model-alias routes for newer frontend (/v8/management/config/oauth/*)
-		v8.GET("/config/oauth/excluded-models", s.mgmt.GetOAuthExcludedModels)
-		v8.PUT("/config/oauth/excluded-models", s.mgmt.PutOAuthExcludedModels)
-		v8.PATCH("/config/oauth/excluded-models", s.mgmt.PatchOAuthExcludedModels)
-		v8.DELETE("/config/oauth/excluded-models", s.mgmt.DeleteOAuthExcludedModels)
-
-		v8.GET("/config/oauth/model-alias", s.mgmt.GetOAuthModelAlias)
-		v8.PUT("/config/oauth/model-alias", s.mgmt.PutOAuthModelAlias)
-		v8.PATCH("/config/oauth/model-alias", s.mgmt.PatchOAuthModelAlias)
-		v8.DELETE("/config/oauth/model-alias", s.mgmt.DeleteOAuthModelAlias)
 	}
 }
 
